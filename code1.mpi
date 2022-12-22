@@ -1,0 +1,36 @@
+#include <iostream>
+#include <mpi.h>
+#include<fstream>
+#include <string.h>
+using namespace std;
+int main(int argc, char *argv[])
+{
+int Total_values=atoi(argv[1]),keyValue=atoi(argv[3]),Total_process=atoi(argv[4]);
+string fileName=argv[2];
+int npes, myrank,values,*fileValues=new int[Total_values],count=0,*rcvbuff;
+fstream read; 
+int element_per_process=Total_values/Total_process;
+rcvbuff=new int[element_per_process];
+MPI_Init(&argc, &argv);
+MPI_Comm_size(MPI_COMM_WORLD, &npes);
+MPI_Comm_rank(MPI_COMM_WORLD, &myrank); 
+if(myrank==0){
+            
+    read.open(fileName, ios::in);  
+    while(read>>values)  
+    {
+     fileValues[count]=values;
+     count++;
+    }
+     fileValues[count]=values;
+}
+MPI_Scatter(fileValues,element_per_process,MPI_INT,rcvbuff,element_per_process,MPI_INT,0,
+MPI_COMM_WORLD);
+for(int i=0;i<element_per_process;i++){
+if(rcvbuff[i]==keyValue){
+cout<<"process "<<myrank<<" Found Key at "<<i<<" index"<<endl;
+break;
+}
+}
+MPI_Finalize();
+}
