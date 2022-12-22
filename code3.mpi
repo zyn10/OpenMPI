@@ -1,0 +1,86 @@
+#include<iostream>
+#include<algorithm>
+#include<mpi.h>
+using namespace std;
+int startIndex=0;
+int main(int argc,char *argv[]){
+int npes,myrank;
+int arr[] = {30,77,45,89,33,20,90,65,95,51,41,33};
+int temp[5];
+int n = sizeof(arr) / sizeof(arr[0]);
+sort(arr, arr + n);
+MPI_Init(&argc, &argv);
+MPI_Comm_size(MPI_COMM_WORLD, &npes);
+MPI_Comm_rank(MPI_COMM_WORLD, &myrank); 
+int peritem=12/5,count=0,EndIndex=0,start=0;
+if(myrank==0){
+for (int i =startIndex;i <12;i++)
+{
+    if(count==peritem){
+        break;
+    }
+    else{
+     count++;
+    }
+    
+}
+}
+else{
+MPI_Recv(temp,sizeof(temp),MPI_INT,myrank-1,myrank-1,MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+startIndex=temp[4];
+for (int i =startIndex;i <12;i++)
+{
+    if(count==peritem+1){
+        break;
+    }
+    else{
+     count++;
+    }
+}
+}
+if(myrank<4){
+start=startIndex;
+startIndex+=peritem+1;
+EndIndex=startIndex-1;
+temp[myrank]=EndIndex;
+temp[4]=startIndex;
+cout<<"Processor "<<myrank<<" Part("<<start<<","<<EndIndex<<"):"<<count<<"Elements"<<endl;
+if(myrank+1<4)
+  MPI_Send(temp,sizeof(temp), MPI_INT,myrank+1,myrank, MPI_COMM_WORLD);
+}
+if(myrank==3){
+cout<<"After reducing bin at PO:"<<endl;
+int count2=0,prevValue=0;
+static int Count[4];
+for(int j=0;j<12;j++){
+   if(arr[j]>=0&&arr[j]<=33){
+       Count[0]++;
+   }
+   if(arr[j]>=34&&arr[j]<=50){
+         Count[1]++;
+   }
+   if(arr[j]>=51&&arr[j]<=75){
+    Count[2]++;
+   }
+   if(arr[j]>=76&&arr[j]<=100){
+    Count[3]++;
+   
+   }
+}
+for(int i=0;i<4;i++){
+if(i==0){
+cout<<"BIN "<<i<<"(0-33)= "<<Count[i]<<" Elements"<<endl;
+}
+else if(i==1){
+cout<<"BIN "<<i<<"(34-50)= "<<Count[i]<<" Elements"<<endl;
+}
+else if(i==2){
+cout<<"BIN "<<i<<"(51-75)= "<<Count[i]<<" Elements"<<endl;
+}
+else if(i==3){
+cout<<"BIN "<<i<<"(76-100)= "<<Count[i]<<" Elements"<<endl;
+}
+}
+}	
+MPI_Finalize();
+}
